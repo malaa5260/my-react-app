@@ -1,14 +1,17 @@
 import {
   isRouteErrorResponse,
+  Link,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { useEffect, useState } from "react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -42,7 +45,72 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/about", label: "About" },
+  ];
+
+  const linkClasses = (path: string) =>
+    `hover:text-blue-600 ${
+      location.pathname === path ? "text-blue-600 font-semibold" : ""
+    }`;
+
+  return (
+    <div className="min-h-screen text-gray-900 dark:text-gray-100">
+      <nav className="bg-gray-800  text-white flex justify-between items-center p-4">
+        {/* Logo */}
+        <Link to="/" className="text-2xl font-bold text-blue-600">
+          MyApp
+        </Link>
+        {/* Desktop Menu */}
+        <ul className="hidden md:flex space-x-6 text-gray-700 font-medium">
+          {navLinks.map((link) => (
+            <li key={link.to}>
+              <Link to={link.to} className={linkClasses(link.to)}>
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {/* Actions */}
+        <div className="flex items-center">
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="md:hidden px-2 py-1 bg-gray-600 rounded hover:bg-gray-500"
+          >
+            ☰
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="md:hidden bg-gray-100 px-4 py-3">
+          <ul className="space-y-3 text-gray-700 font-medium">
+            {navLinks.map((link) => (
+              <li key={link.to}>
+                <Link
+                  to={link.to}
+                  className={linkClasses(link.to)}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <main className="p-6">
+        <Outlet />
+      </main>
+    </div>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
