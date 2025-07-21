@@ -1,26 +1,40 @@
+import { type LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 import type { Route } from "./+types/about";
-
-export function meta() {
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+export function meta({}: Route.MetaArgs) {
   return [
     { title: "About" },
     { name: "description", content: "Learn more about this To‑Do app." },
   ];
 }
-export default function About({}: Route.MetaArgs) {
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const response = await fetch("https://jsonplaceholder.typicode.com/users");
+  const users: User[] = await response.json();
+  return users;
+}
+
+export default function About() {
+  const users = useLoaderData<typeof loader>();
+
   return (
-    <div className="max-w-2xl mx-auto mt-10 px-4">
-      <h1 className="text-3xl font-bold mb-4 text-purple-700">📘 About</h1>
-      <p className="text-lg text-gray-700">
-        This is a simple To‑Do app built with React 19, React Router v7, and Tailwind CSS.
-        <br />
-        It demonstrates key concepts like:
+    <div className="space-y-4 card bg-white p-4 rounded-2xl">
+      <h1 className="text-3xl font-bold text-blue-600">About Us</h1>
+      <p className="text-gray-700">
+        Here’s a list of our awesome users fetched via Loader:
       </p>
-      <ul className="list-disc pl-6 mt-4 text-gray-600 space-y-1">
-        <li>Component structure</li>
-        <li>Props & State</li>
-        <li>Lifting state up</li>
-        <li>localStorage integration</li>
-        <li>File-based routing (v7)</li>
+
+      <ul className="list-disc pl-6 text-gray-800">
+        {users.map((user) => (
+          <li key={user.id}>
+            <strong>{user.name}</strong> – {user.email}
+          </li>
+        ))}
       </ul>
     </div>
   );

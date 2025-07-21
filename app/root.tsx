@@ -51,15 +51,17 @@ export default function App() {
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/about", label: "About" },
+    { to: "/contact", label: "Contact" },
+    { to: "/blog", label: "Blog" },
   ];
 
   const linkClasses = (path: string) =>
     `hover:text-blue-600 ${
-      location.pathname === path ? "text-blue-600 font-semibold" : ""
+      location.pathname === path ? "text-blue-600 font-semibold" : "text-white"
     }`;
 
   return (
-    <div className="min-h-screen text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen text-gray-900 dark:text-gray-100 bg-white">
       <nav className="bg-gray-800  text-white flex justify-between items-center p-4">
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold text-blue-600">

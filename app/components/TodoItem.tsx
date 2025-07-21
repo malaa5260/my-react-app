@@ -15,7 +15,7 @@ export const TodoItem: FC<TodoItemProps> = ({ todo, onDelete, onToggle }) => {
           type="checkbox"
           checked={todo.done}
           onChange={onToggle}
-          className="w-6 h-6"
+          className="w-6 h-6 cursor-pointer"
         />
         <span className={`text-gray-800 ${todo.done ? "line-through" : ""}`}>
           {todo.text}

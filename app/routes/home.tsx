@@ -12,7 +12,7 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   return(
     <div className="space-y-8">
-      <Welcome />
+      {/* <Welcome /> */}
       <TodoApp />
     </div>
   )
