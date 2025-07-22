@@ -12,6 +12,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { useEffect, useState } from "react";
+import { BlogProvider } from "./context/BlogContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -61,7 +62,7 @@ export default function App() {
     }`;
 
   return (
-    <div className="min-h-screen text-gray-900 dark:text-gray-100 bg-white">
+    <div className="min-h-screen text-gray-900 bg-white">
       <nav className="bg-gray-800  text-white flex justify-between items-center p-4">
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold text-blue-600">
@@ -109,7 +110,9 @@ export default function App() {
       )}
 
       <main className="p-6">
-        <Outlet />
+        <BlogProvider>
+          <Outlet />
+        </BlogProvider>
       </main>
     </div>
   );

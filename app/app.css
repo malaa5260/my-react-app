@@ -13,3 +13,9 @@ body {
     color-scheme: dark;
   }
 }
+
+@layer base {
+  ::placeholder {
+    @apply text-gray-400; 
+  }
+}
