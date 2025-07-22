@@ -11,6 +11,12 @@ type BlogContextType = {
   addPost: (post: Omit<Post, "id">) => void;
   deletePost: (id: number) => void;
   updatePost: (id: number, updated: Omit<Post, "id">) => void;
+  page: number;
+  totalPages: number;
+  search: string;
+  setSearch: (value: string) => void;
+  setPage: (value: number) => void;
+  isLoading: boolean;
 };
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
@@ -20,6 +26,11 @@ export function BlogProvider({ children }: { children: ReactNode }) {
     { id: 1, title: "Welcome to My Blog", body: "This is the first post." },
     { id: 2, title: "React Tips", body: "React is great for building UIs." },
   ]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const addPost = (post: Omit<Post, "id">) => {
     setPosts((prevPosts) => [...prevPosts, { ...post, id: Date.now() }]);
   };
@@ -32,7 +43,20 @@ export function BlogProvider({ children }: { children: ReactNode }) {
     );
   };
   return (
-    <BlogContext.Provider value={{ posts, addPost, deletePost, updatePost }}>
+    <BlogContext.Provider
+      value={{
+        posts,
+        addPost,
+        deletePost,
+        updatePost,
+        page,
+        totalPages,
+        search,
+        setSearch,
+        setPage,
+        isLoading,
+      }}
+    >
       {children}
     </BlogContext.Provider>
   );

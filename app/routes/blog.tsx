@@ -1,4 +1,4 @@
-import { Form, Link, useLoaderData, useNavigation } from "react-router";
+import { Form, Link, useLoaderData, useNavigate, useNavigation } from "react-router";
 import type { LoaderFunctionArgs } from "react-router";
 import { useBlog } from "~/context/BlogContext";
 
@@ -15,53 +15,57 @@ type BlogLoaderData = {
   search: string;
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  let page = Number(url.searchParams.get("page")) || 1;
-  const search = url.searchParams.get("search")?.toLowerCase() || "";
-  const limit = 5;
+// export async function loader({ request }: LoaderFunctionArgs) {
+//   const url = new URL(request.url);
+//   let page = Number(url.searchParams.get("page")) || 1;
+//   const search = url.searchParams.get("search")?.toLowerCase() || "";
+//   const limit = 5;
 
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-  if (!res.ok) throw new Response("Failed to load posts", { status: 500 });
+//   const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+//   if (!res.ok) throw new Response("Failed to load posts", { status: 500 });
 
-  let allPosts: Post[] = await res.json();
-  if (search.trim()) {
-    const keyword = search.trim().toLowerCase();
-    allPosts = allPosts.filter(
-      (post) =>
-        post.title.toLowerCase().includes(keyword) ||
-        post.body.toLowerCase().includes(keyword)
-    );
-  }
-  const totalPages = Math.ceil(allPosts.length / limit);
-  if (page < 1) page = 1;
-  if (page > totalPages) page = totalPages;
+//   let allPosts: Post[] = await res.json();
+//   if (search.trim()) {
+//     const keyword = search.trim().toLowerCase();
+//     allPosts = allPosts.filter(
+//       (post) =>
+//         post.title.toLowerCase().includes(keyword) ||
+//         post.body.toLowerCase().includes(keyword)
+//     );
+//   }
+//   const totalPages = Math.ceil(allPosts.length / limit);
+//   if (page < 1) page = 1;
+//   if (page > totalPages) page = totalPages;
 
-  const start = (page - 1) * limit + 1;
-  const paginated = allPosts.slice(start, start + limit);
-  return { posts: paginated, page, totalPages, search } as BlogLoaderData;
-}
+//   const start = (page - 1) * limit + 1;
+//   const paginated = allPosts.slice(start, start + limit);
+//   return { posts: paginated, page, totalPages, search } as BlogLoaderData;
+// }
 
 export default function Blog() {
   // const { posts, page, totalPages, search } = useLoaderData<BlogLoaderData>();
-  const { posts, page, totalPages, search, setSearch, setPage } = useBlog();
-
-  const navigation = useNavigation();
-  const isLoading = navigation.state === "loading";
-  const pages = getVisablePages(page, totalPages);
-
+  const { posts, page, totalPages, search, setSearch, setPage, isLoading } =
+    useBlog();
+  const pages = getVisiblePages(page, totalPages);
+  const navigate = useNavigate();
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center">
         <h1 className="text-3xl font-bold text-blue-600">Blog</h1>
-        <Link
-          to="/blog/new"
+        <button
+          onClick={() => navigate("/blog/new")}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500"
         >
           + Add Post
-        </Link>
+        </button>
       </div>
-      <Form method="get" className="flex gap-2">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          setPage(1);
+        }}
+        className="flex gap-2"
+      >
         <input
           type="text"
           name="search"
@@ -76,7 +80,7 @@ export default function Blog() {
         >
           Search
         </button>
-      </Form>
+      </form>
       {isLoading ? (
         <ul className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -106,48 +110,47 @@ export default function Blog() {
       )}
       {/* Pagination Controls */}
       <div className="flex items-center justify-between pt-4 max-w-xs">
-        <Link
-          to={`/blog?page=${page - 1}${search ? `&search=${search}` : ""}`}
+        <button
+          onClick={() => setPage(page - 1)}
+          disabled={page <= 1}
           className={`px-3 py-2 rounded ${
             page <= 1
               ? "bg-gray-300 cursor-not-allowed"
               : "bg-blue-600 text-white hover:bg-blue-500"
           }`}
-          aria-disabled={page <= 1}
         >
           Prev
-        </Link>
-
+        </button>
         {pages.map((p) => (
-          <Link
+          <button
             key={p}
-            to={`/blog?page=${p}${search ? `&search=${search}` : ""}`}
-            className={`text-black px-3 py-2 rounded ${
+            onClick={() => setPage(p)}
+            className={`px-3 py-2 rounded ${
               p === page
                 ? "bg-blue-700 text-white"
                 : "bg-gray-200 hover:bg-gray-300"
             }`}
           >
             {p}
-          </Link>
+          </button>
         ))}
-        <Link
-          to={`/blog?page=${page + 1}${search ? `&search=${search}` : ""}`}
+        <button
+          onClick={() => setPage(page + 1)}
+          disabled={page >= totalPages}
           className={`px-3 py-2 rounded ${
             page >= totalPages
               ? "bg-gray-300 cursor-not-allowed"
               : "bg-blue-600 text-white hover:bg-blue-500"
           }`}
-          aria-disabled={page >= totalPages}
         >
           Next
-        </Link>
+        </button>
       </div>
     </div>
   );
 }
 // helper function
-function getVisablePages(current: number, total: number, delta: number = 1) {
+function getVisiblePages(current: number, total: number, delta: number = 1) {
   const pages = [];
   const start = Math.max(1, current - delta);
   const end = Math.min(total, current + delta);

@@ -4,10 +4,12 @@ import {
   Link,
   redirect,
   useLoaderData,
+  useParams,
   useRouteError,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
+import { useBlog } from "~/context/BlogContext";
 
 type Post = {
   id: number;
@@ -15,24 +17,39 @@ type Post = {
   body: string;
 };
 
-export async function loader({ params }: LoaderFunctionArgs) {
-  const res = await fetch(
-    `https://jsonplaceholder.typicode.com/posts/${params.id}`
-  );
-  if (!res.ok) {
-    throw new Response("Post not found", { status: 404 });
-  }
-  const post = await res.json();
-  return post as Post;
-}
-export async function action({ params }: ActionFunctionArgs) {
-  await fetch(`https://jsonplaceholder.typicode.com/posts/${params.id}`, {
-    method: "DELETE",
-  });
-  return redirect("/blog");
-}
+// export async function loader({ params }: LoaderFunctionArgs) {
+//   const res = await fetch(
+//     `https://jsonplaceholder.typicode.com/posts/${params.id}`
+//   );
+//   if (!res.ok) {
+//     throw new Response("Post not found", { status: 404 });
+//   }
+//   const post = await res.json();
+//   return post as Post;
+// }
+// export async function action({ params }: ActionFunctionArgs) {
+//   await fetch(`https://jsonplaceholder.typicode.com/posts/${params.id}`, {
+//     method: "DELETE",
+//   });
+//   return redirect("/blog");
+// }
 export default function BlogPost() {
-  const post = useLoaderData<Post>();
+  //const post = useLoaderData<Post>();
+  const { posts, deletePost } = useBlog();
+  const { id } = useParams(); // Get post id from route
+  const post = posts.find((p) => p.id === Number(id));
+  if (!post) {
+    return <p className="text-red-600">Post not found.</p>;
+  }
+  const handleDelete = () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this post?"
+    );
+    if (confirmDelete) {
+      deletePost(post.id);
+      window.location.href = "/blog";
+    }
+  };
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold text-blue-600">{post.title}</h1>
@@ -45,14 +62,13 @@ export default function BlogPost() {
           Edit
         </Link>
 
-        <Form method="post">
-          <button
-            type="submit"
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500"
-          >
-            Delete
-          </button>
-        </Form>
+        <button
+          onClick={handleDelete}
+          type="submit"
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500"
+        >
+          Delete
+        </button>
       </div>
     </div>
   );
